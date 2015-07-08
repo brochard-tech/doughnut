@@ -1,8 +1,8 @@
 /**
  * Created by MyVertigo on 29/06/2015.
+ * Copyright 2014 - 2015 Christophe Brochard
+ * Licensed under Creative Commons Attribution 4.0 International License. 
  */
-
-
 
 (function($) {
 
@@ -10,15 +10,20 @@
         /* ATTRIBUTES */
         size: 80,
         segmentSize: 6,
+
+        fontColor: "white",
         foregroundColor: '#181516',
 
-        animated: true,
+        animated: false,
         duration: 3000,
-        valueDisplayed: 0,      // If valueDisplayed !== 0, value is displayed on the middle of the circle
+        valueDisplayed: null,      // If valueDisplayed !== 0, this value will be displayed on the middle of the circle
+
+        showTotalValue: true,
+        showLabelValue: true,
 
         // If there is only one segment
         value: 0,
-        maxValue: 0,
+        maxValue: null,
         color: "#3CB4F0",
         name: '',
         unit: '',
@@ -62,22 +67,35 @@
 
             this.initDraw();
 
-            if(this.segments)
+            if(this.segments){
                 this.determineTotalValue();
-            else
+            }else{
+                this.maxValue = this.maxValue == null ? this.value : this.maxValue;
                 this._total = this.maxValue;
+            }
 
             return this;
         },
 
+        // Reinitialization of all element
+        reinit: function(){
+            this._currentSegmentValue = 0;
+            this._valueDisplayed = false;
+            this._currentSegment = 0;
+
+            this.clearDraw();
+            this.$parent.find('.doughnut-values').remove();
+        },
+
         // Launch animation
         animate: function(){
-            var doug = this;
+            this.reinit();
 
+            var doug = this;
             switch(this.animated){
                 case true:
                     this.$parent.prop('Angle', 0).animate({
-                        angle: doug.getMaxAngle()
+                        Angle: doug.getMaxAngle()
                     }, {
                         duration: doug.duration,
                         queue: false,
@@ -150,7 +168,7 @@
             // Determine angle en coordinate
             var size = this.size / 2;
             var angle = (segment.value / this._total) * 360;
-            var currentAngle = ((offset || 0) + (angle / 2));
+            var currentAngle = ((offset || 0) + (angle / 2));
 
             switch(segment.textPos){
                 case 'top':
@@ -201,7 +219,7 @@
         },
 
         displayValueByPos: function(segment, x, y, offsetX, offsetY){
-            if(!segment.value)
+            if(!segment.value || !this.showLabelValue)
                 return false;
 
             var element = document.createElement('div');
@@ -210,7 +228,7 @@
             // Creation of HTML values and names
             element.className = "doughnut-values";
             element.style.display = "inline-block";
-            element.innerHTML = "<span class='doughnut-value'>" + (segment.value || 0).toString() + " " + this.unit + "</span><br /><span class='doughnut-name'>" + (segment.name || "") + "</span>";
+            element.innerHTML = "<span class='doughnut-value'>" + (segment.value || 0).toString() + " " + this.unit + "</span><br /><span class='doughnut-name'>" + (segment.name || "") + "</span>";
 
             // Css for element
             $(element).css({
@@ -270,22 +288,24 @@
             ctx.closePath();
 
             // Cancel draw if animated is launched manualy
-            if(this.animated == "delay")
+            if(this.animated == "delay" || !this.showTotalValue)
                 return false;
 
-            if(this.valueDisplayed)
-                var total = this.valueDisplayed;
+            var total = 0;
+            if(this.valueDisplayed !== null)
+                total = this.valueDisplayed;
             else
-                var total = this.segments ? this._total.toString() : this.value.toString();
+                total = this.segments ? this._total.toString() : this.value.toString();
 
             var value = total;
             if(step !== undefined){
                 value = Math.floor((step / this.getMaxAngle()) * total).toString();
+                value = isNaN(value) ? 0 : value;
             }
 
             // Draw the total value
             ctx.font = "25px Arial";
-            ctx.fillStyle = "white";
+            ctx.fillStyle = this.fontColor;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText(value, middle - (this.segmentSize / 4), middle - (this.segmentSize / 4));
@@ -369,7 +389,7 @@
         if(prop !== "animate"){
             prop = prop || {};
             var doug = Object.create(Doughnut);
-            var duration = prop.duration || 3000;
+            var duration = prop.duration || 3000;
 
             doug.init(this, prop);
             $(this).prop('doug', doug);
