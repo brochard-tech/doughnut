@@ -25,7 +25,7 @@
         value: 0,
         maxValue: null,
         color: "#3CB4F0",
-        name: '',
+        name: null,
         unit: '',
         textPos: 'auto',  // Alignement of the text (auto, bottom, top, left or right)
 
@@ -219,7 +219,7 @@
         },
 
         displayValueByPos: function(segment, x, y, offsetX, offsetY){
-            if(!segment.value || !this.showLabelValue)
+            if(!segment.value || !this.showLabelValue || !segment.name)
                 return false;
 
             var element = document.createElement('div');
