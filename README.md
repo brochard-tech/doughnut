@@ -4,7 +4,7 @@ jQuery.Doughnut is a super-simple plugin for create doughnut animated with multi
 
 ## Demo
 
-[Click here to see a demo](http://www.myvertigo.fr/portfolio/plugins/doughnut/example/).
+[Click here to see a demo](http://gamesideral.io/example/doughnut).
 
 ## Installation
 
